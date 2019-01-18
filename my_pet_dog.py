@@ -32,10 +32,13 @@ class Dog:
     MAX_HUNGRY_TIME = 1000.0
     MAX_BATH_TIME = 3000.0
 
-    def __init__(self, name="", age=0, breed="Golder Ritriever", **kargs):
+    def __init__(self, name="", age=0,
+                 breed="Golder Ritriever", cost=200,
+                 **kargs):
         self.name = name
         self.age = age
         self.breed = breed
+        self.cost = cost
         # To keep track of hunger level of dog
         self.is_it_hungry = False
         self.time_of_last_food = time.time()
@@ -44,11 +47,19 @@ class Dog:
         # boolean var, need to give bath if True.
         self.need_bath = False
         self.last_bath = time.time()
+        # to keep track of owner
+        self.owner = None
+        # update_dog_status should be last so as it will be
+        # called after initializing all parameters
         self.update_dog_status()
 
     def get_info(self):
         """"Prints Name and its age"""
-        print("{} is {} years old".format(self.name, self.age))
+        print("{} is {} years old,".format(self.name, self.age), end=' ')
+        if self.owner:
+            print("owned by {}".format(self.owner))
+        else:
+            print("owned by none.")
 
     def get_biggest_number(self, *args):
         """Find the oldest dog from the dog list"""
@@ -60,7 +71,7 @@ class Dog:
 
     def is_hungry(self):
         """to check if the dog is hungry"""
-        if not self.is_it_hungry:
+        if self.is_it_hungry:
             print("\nStat : {} is hungry please feed!!".format(self.name))
         elif time.time() - self.time_of_last_food > self.MAX_HUNGRY_TIME:
             # print(time.time(), self.MAX_HUNGRY_TIME, self.time_of_last_food)
@@ -73,22 +84,25 @@ class Dog:
         """ This will print the menu for user to choose the food for dog
             TODO: Need to update the menu """
         print("Menu:")
-        print("1. Natural Grain \n2. Wellness Core Natural Grain Free")
+        print("1. Natural Grain \t $10 \n"
+              "2. Wellness Core Natural Grain Free \t $15 \n")
         _food = input("choose your food:")
-        _food = "Natural Grain" if _food == '1' else "Wellness Core Natural Grain Free"
+        _food = ["Natural Grain", 10] if _food == '1' else ["Wellness Core Natural Grain", 15]
         return _food
 
     def feed(self):
         """Feeding food """
         if self.is_it_hungry:
             _food = self.get_food()
-            print("\nProc: Feeding {} to {}..".format(_food, self.name))
+            print("\nProc: Feeding {} to {}..".format(_food[0], self.name))
             self.is_it_hungry = False
             self.time_of_last_food = time.time()
             self.happy += 10
             print("{} is full and happy".format(self.name))
+            return _food[1]
         else:
             print("{} is not hungry!".format(self.name))
+            return None
 
     def bath(self):
         """Bathing your dog"""
@@ -126,17 +140,18 @@ class Dog:
             this thread will be called after given interval"""
         print("Updating")
         # current time to update other status
-        c_time = time.time()
-        #
-        if c_time - self.last_bath > self.MAX_BATH_TIME:
-            self.need_bath = True
-            print("{0} is dirty, {0} needs bath".format(self.name))
-        if c_time - self.time_of_last_food > self.MAX_HUNGRY_TIME:
-            self.is_it_hungry = True
-        if self.happy >= 5:
-            self.happy -= 1
-        if self.happy in {70, 50, 25, 5}:
-            self.mood()
+        if self.owner:
+            c_time = time.time()
+            #
+            if c_time - self.last_bath > self.MAX_BATH_TIME:
+                self.need_bath = True
+                print("{0} is dirty, {0} needs bath".format(self.name))
+            if c_time - self.time_of_last_food > self.MAX_HUNGRY_TIME:
+                self.is_it_hungry = True
+            if self.happy >= 5:
+                self.happy -= 0.25
+            if self.happy in {70, 50, 25, 5}:
+                self.mood()
 
         # to keep updating every update_rate seconds
         _timer = threading.Timer(20.0, self.update_dog_status)
